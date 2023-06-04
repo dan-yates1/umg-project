@@ -1,8 +1,10 @@
+import jwt
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
+from functools import wraps
 
 # Initialize the Flask application
 app = Flask(__name__)
@@ -92,6 +94,17 @@ def add_track():
     db.session.add(track)
     db.session.commit()
     return jsonify(track.to_dict())
+
+@app.route('/api/track/<int:id>', methods=['DELETE'])
+def delete_track(id):
+    track = Track.query.filter_by(id=id).first()
+
+    try:
+        db.session.delete(track)
+        db.session.commit()
+        return jsonify({'message': 'Logged in successfully'}), 200
+    except:
+        return jsonify({'message': 'Failed to delete track'}), 400
 
 if __name__ == "__main__":
     with app.app_context():

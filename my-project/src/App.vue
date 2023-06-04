@@ -42,6 +42,8 @@
       <ul class="list-group mb-4">
         <li v-for="track in tracks" :key="track.id" class="list-group-item bg-dark text-white">
           {{ track.name }}
+
+          <button @click="deleteTrack(track.id)" class="btn btn-danger ml-2">Delete</button>
         </li>
       </ul>
 
@@ -49,13 +51,25 @@
       <button @click="addTrack" class="btn btn-primary">Add Track</button>
     </div>
   </div>
+
+  <div v-if="editingTrack" class="card mb-4">
+      <div class="card-header">Edit Track</div>
+      <div class="card-body">
+        <form @submit.prevent="updateTrack">
+          <div class="form-group">
+            <label for="editTrackName">Track Name:</label>
+            <input v-model="editingTrack.name" type="text" id="editTrackName" class="form-control" required>
+          </div>
+          <button type="submit" class="btn btn-primary">Update Track</button>
+        </form>
+      </div>
+    </div>
 </template>
 
 <script>
 import axios from 'axios';
 
 axios.defaults.withCredentials = true;
-
 
 export default {
   data() {
@@ -97,10 +111,41 @@ export default {
         console.log(error);
       }
     },
+    async logout() {
+      try {
+        await axios.post('/logout');
+        this.loggedIn = false;
+        this.user = null;
+      } catch (error) {
+        console.error(error);
+      }
+    },
     async addTrack() {
       const response = await axios.post('http://localhost:5000/api/track', { name: this.newTrack });
       this.tracks.push(response.data);
       this.newTrack = '';
+    },
+    async editTrack(track) {
+      this.editingTrack = Object.assign({}, track);
+    },
+    async updateTrack() {
+      if (!this.editingTrack.name) return;
+
+      try {
+        await axios.put(`http://localhost:5000/api/track/${this.editingTrack.id}`, { name: this.editingTrack.name });
+        this.fetchTracks();
+        this.editingTrack = null;
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    async deleteTrack(id) {
+      try {
+        await axios.delete(`http://localhost:5000/api/track/${id}`);
+        this.tracks = this.tracks.filter(track => track.id !== id);
+      } catch (error) {
+        console.error('Error deleting track:', error);
+      }
     }
   }
 };
