@@ -44,6 +44,7 @@
           {{ track.name }}
 
           <button @click="deleteTrack(track.id)" class="btn btn-danger ml-2">Delete</button>
+          <button @click="editTrack(track)" class="btn btn-primary ml-2">Edit</button>
         </li>
       </ul>
 
@@ -80,9 +81,11 @@ export default {
       username: '',
       password: '',
       loginUsername: '',
-      loginPassword: ''
+      loginPassword: '',
+      editingTrack: null
     };
   },
+
   methods: {
     async register() {
       try {
@@ -96,6 +99,7 @@ export default {
         console.log(error);
       }
     },
+
     async login() {
       try {
         await axios.post('http://localhost:5000/login', {
@@ -111,6 +115,7 @@ export default {
         console.log(error);
       }
     },
+
     async logout() {
       try {
         await axios.post('/logout');
@@ -120,14 +125,17 @@ export default {
         console.error(error);
       }
     },
+
     async addTrack() {
       const response = await axios.post('http://localhost:5000/api/track', { name: this.newTrack });
       this.tracks.push(response.data);
       this.newTrack = '';
     },
+
     async editTrack(track) {
       this.editingTrack = Object.assign({}, track);
     },
+
     async updateTrack() {
       if (!this.editingTrack.name) return;
 
@@ -139,6 +147,7 @@ export default {
         console.error(error);
       }
     },
+
     async deleteTrack(id) {
       try {
         await axios.delete(`http://localhost:5000/api/track/${id}`);

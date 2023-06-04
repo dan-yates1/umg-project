@@ -1,4 +1,3 @@
-import jwt
 from flask import Flask, jsonify, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager, UserMixin, login_user, login_required, current_user, logout_user
@@ -98,7 +97,6 @@ def add_track():
 @app.route('/api/track/<int:id>', methods=['DELETE'])
 def delete_track(id):
     track = Track.query.filter_by(id=id).first()
-
     try:
         db.session.delete(track)
         db.session.commit()
@@ -106,7 +104,20 @@ def delete_track(id):
     except:
         return jsonify({'message': 'Failed to delete track'}), 400
 
+@app.route('/api/track/<int:id>', methods=['PUT'])
+def update_track(id):
+    track = Track.query.filter_by(id=id).first()
+    try:
+        data = request.get_json()
+        if not track:
+            return jsonify({'message': 'No track found!'})
+        track.name = data['name']
+        db.session.commit()
+        return jsonify({'message': 'Track has been updated!'})
+    except:
+        return jsonify({'message': 'Failed to delete track'}), 400    
+
 if __name__ == "__main__":
     with app.app_context():
         db.create_all()
-    app.run(debug=True)
+    app.run()
