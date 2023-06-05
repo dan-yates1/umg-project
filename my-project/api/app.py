@@ -95,8 +95,8 @@ def add_track():
     return jsonify(track.to_dict())
 
 @app.route('/api/track/<int:id>', methods=['DELETE'])
-def delete_track(id):
-    track = Track.query.filter_by(id=id).first()
+def delete_track(track_id):
+    track = Track.query.filter_by(id=track_id).first()
     try:
         db.session.delete(track)
         db.session.commit()
@@ -104,18 +104,18 @@ def delete_track(id):
     except:
         return jsonify({'message': 'Failed to delete track'}), 400
 
-@app.route('/api/track/<int:id>', methods=['PUT'])
-def update_track(id):
-    track = Track.query.filter_by(id=id).first()
-    try:
-        data = request.get_json()
-        if not track:
-            return jsonify({'message': 'No track found!'})
-        track.name = data['name']
-        db.session.commit()
-        return jsonify({'message': 'Track has been updated!'})
-    except:
-        return jsonify({'message': 'Failed to delete track'}), 400    
+@app.route('/api/track/<track_id>', methods=['PUT'])
+def update_track(track_id):
+    data = request.get_json()
+    track = Track.query.filter_by(id=track_id).first()
+    if not track:
+        return jsonify({'message' : 'No track found!'}), 404
+    
+    track.name = data['name']
+    db.session.commit()
+
+    return jsonify({'message' : 'Track has been updated!', 'track': track.to_dict()}), 200
+ 
 
 if __name__ == "__main__":
     with app.app_context():

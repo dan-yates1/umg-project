@@ -82,8 +82,23 @@ export default {
       password: '',
       loginUsername: '',
       loginPassword: '',
-      editingTrack: null
+      editingTrack: null,
+      searchInput: ''
     };
+  },
+
+  computed: {
+    filteredTracks() {
+      if (!this.searchInput) {
+        return this.tracks;
+      }
+
+      const searchLowercased = this.searchInput.toLowerCase();
+
+      return this.tracks.filter(track =>
+        track.name.toLowerCase().includes(searchLowercased)
+      );
+    },
   },
 
   methods: {
@@ -127,7 +142,8 @@ export default {
     },
 
     async addTrack() {
-      const response = await axios.post('http://localhost:5000/api/track', { name: this.newTrack });
+      const response = await axios.post('http://localhost:5000/api/track', 
+      { name: this.newTrack });
       this.tracks.push(response.data);
       this.newTrack = '';
     },
@@ -135,16 +151,16 @@ export default {
     async editTrack(track) {
       this.editingTrack = Object.assign({}, track);
     },
-
+ 
     async updateTrack() {
-      if (!this.editingTrack.name) return;
-
       try {
-        await axios.put(`http://localhost:5000/api/track/${this.editingTrack.id}`, { name: this.editingTrack.name });
-        this.fetchTracks();
-        this.editingTrack = null;
+        const updatedTrackIndex = this.tracks.findIndex(track => track.id === this.editingTrack.id);
+        if (updatedTrackIndex !== -1) {
+          this.tracks[updatedTrackIndex] = this.editingTrack;
+        }
+          this.editingTrack = null;
       } catch (error) {
-        console.error(error);
+        console.error('Error updating track:', error);
       }
     },
 
