@@ -4,12 +4,15 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, cur
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 from functools import wraps
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token
 
-# Initialize the Flask application
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your-secret-key'  # Change this!
+app.config['SECRET_KEY'] = 'your-secret-key'
+app.config['JWT_SECRET_KEY'] = 'your-secret-key'
+app.config['JWT_TOKEN_LOCATION'] = ['headers'] 
+jwt = JWTManager(app)
 
 # Initialize SQLAlchemy and LoginManager
 db = SQLAlchemy(app)
@@ -68,10 +71,11 @@ def register():
 def login():
     data = request.get_json()
     user = User.query.filter_by(username=data['username']).first()
-    if user and user.check_password(data['password']):
-        login_user(user)
-        return jsonify({'message': 'Logged in successfully'}), 200
-    return jsonify({'message': 'Invalid username or password'}), 400
+    if user and check_password_hash(user.password_hash, data['password']):
+        access_token = create_access_token(identity={'username': user.username})
+        return jsonify(access_token=access_token), 200
+    else:
+        return jsonify({"msg": "Invalid credentials"}), 401
 
 @app.route('/logout', methods=['POST'])
 @login_required
@@ -95,26 +99,31 @@ def add_track():
     return jsonify(track.to_dict())
 
 @app.route('/api/track/<int:id>', methods=['DELETE'])
-def delete_track(track_id):
-    track = Track.query.filter_by(id=track_id).first()
+@jwt_required()
+def delete_track(id):
+    track = Track.query.get(id)  # This will return None if no track with that ID exists
+    if track is None:
+        return jsonify({'message': 'Invalid track ID.'}), 404
     try:
         db.session.delete(track)
         db.session.commit()
-        return jsonify({'message': 'Logged in successfully'}), 200
+        return jsonify({'message': 'Track deleted successfully'}), 200
     except:
         return jsonify({'message': 'Failed to delete track'}), 400
 
-@app.route('/api/track/<track_id>', methods=['PUT'])
-def update_track(track_id):
+@app.route('/api/track/<int:id>', methods=['PUT'])
+@jwt_required()
+def update_track(id):
+    track = Track.query.get(id)
+    if track is None:
+        return jsonify({'message': 'Invalid track ID.'}), 404
     data = request.get_json()
-    track = Track.query.filter_by(id=track_id).first()
-    if not track:
-        return jsonify({'message' : 'No track found!'}), 404
-    
-    track.name = data['name']
-    db.session.commit()
-
-    return jsonify({'message' : 'Track has been updated!', 'track': track.to_dict()}), 200
+    track.name = data.get('name', track.name)
+    try:
+        db.session.commit()
+        return jsonify({'message': 'Track updated successfully'}), 200
+    except:
+        return jsonify({'message': 'Failed to update track'}), 400
  
 
 if __name__ == "__main__":
