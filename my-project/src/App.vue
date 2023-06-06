@@ -40,7 +40,7 @@
 
     <div v-else>
       <h5>Welcome, {{ username }}!</h5>
-      <p><button @click="logout" class="btn btn-danger ml-2">Logout</button></p>   
+      <button @click="logout" class="btn btn-danger ml-2">Logout</button>
       <ul class="list-group mb-4">
         <li v-for="track in tracks" :key="track.id" class="list-group-item bg-dark text-white">
           {{ track.name }}
@@ -51,6 +51,12 @@
 
       <input v-model="newTrack" type="text" class="form-control mb-3" placeholder="Add new track">
       <button @click="addTrack" class="btn btn-primary">Add Track</button>
+      <p></p>
+        <form @submit.prevent="searchTracks(searchQuery)">
+          <input v-model="searchQuery" type="text" placeholder="Search tracks..." class="form-control">
+          <button type="submit" class="btn btn-primary">Search</button>
+          <button type="button" class="btn btn-danger ml-2" @click="resetTracks">Reset</button>
+        </form>
     </div>
     <p></p>
       <div v-if="editingTrack" class="card">
@@ -86,7 +92,9 @@ export default {
       editingTrack: null,
       searchInput: '',
       isHovered: false,
-      isClicked: false
+      isClicked: false,
+      searchQuery: '',
+      originalTracks: []
     };
   },
 
@@ -175,7 +183,6 @@ export default {
     }
   },
 
-
     async deleteTrack(id) {
       try {
           const token = localStorage.getItem('access_token');
@@ -188,6 +195,25 @@ export default {
       } catch (error) {
         console.error('Error deleting track:', error);
       }
+    },
+
+    async searchTracks(query) {
+        try {
+            const token = localStorage.getItem('access_token');
+            const response = await axios.get(`http://localhost:5000/api/track/search?query=${query}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            if (response.status === 200) {
+                this.originalTracks = [...this.tracks]; 
+                this.tracks = response.data;
+            }
+        } catch (error) {
+            console.error('Error searching tracks:', error);
+        }
+
+    },
+    resetTracks() {
+        this.tracks = [...this.originalTracks];
     }
   }
 };

@@ -124,6 +124,16 @@ def update_track(id):
         return jsonify({'message': 'Track updated successfully'}), 200
     except:
         return jsonify({'message': 'Failed to update track'}), 400
+
+@app.route('/api/track/search', methods=['GET'])
+@jwt_required()
+def search():
+    query = request.args.get('query')
+    if query:
+        tracks = Track.query.filter(Track.name.ilike(f'%{query}%')).all()
+        return jsonify([track.to_dict() for track in tracks]), 200
+    else:
+        return jsonify({'message': 'Query parameter is missing'}), 400
  
 
 if __name__ == "__main__":
