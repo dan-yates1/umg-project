@@ -5,12 +5,13 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 from functools import wraps
 from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
+from config import SECRET_KEY, JWT_SECRET_KEY
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config['SECRET_KEY'] = 'your-secret-key'
-app.config['JWT_SECRET_KEY'] = 'your-secret-key'
+app.config['SECRET_KEY'] = SECRET_KEY
+app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
 app.config['JWT_TOKEN_LOCATION'] = ['headers'] 
 jwt = JWTManager(app)
 
