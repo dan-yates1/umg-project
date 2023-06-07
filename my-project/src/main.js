@@ -1,3 +1,8 @@
+import axios from 'axios';
+import { BASE_URL } from './config';
+
+axios.defaults.baseURL = BASE_URL;
+
 const originalConsoleError = console.error;
 console.error = (message) => {
   if (message && message.indexOf('ResizeObserver loop limit exceeded') > -1) {

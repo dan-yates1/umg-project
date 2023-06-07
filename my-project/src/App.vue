@@ -117,7 +117,7 @@ export default {
   methods: {
     async register() {
       try {
-        await axios.post('http://localhost:5000/register', {
+        await axios.post('/register', {
           username: this.username,
           password: this.password
         });
@@ -130,7 +130,7 @@ export default {
 
     async login() {
       try {
-        const response = await axios.post('http://localhost:5000/login', {
+        const response = await axios.post('/login', {
           username: this.loginUsername,
           password: this.loginPassword
         }, {
@@ -152,7 +152,7 @@ export default {
     async getTracks() {
       try {
         const token = localStorage.getItem('access_token');
-        const response = await axios.get('http://localhost:5000/api/tracks', {
+        const response = await axios.get('/api/tracks', {
           headers: { Authorization: `Bearer ${token}` }
         });
         const userId = this.userId;
@@ -175,7 +175,7 @@ export default {
     async addTrack() {
       try {
         const token = localStorage.getItem('access_token');
-        const response = await axios.post('http://localhost:5000/api/tracks', {
+        const response = await axios.post('/api/tracks', {
           name: this.newTrack
         }, {
           headers: { Authorization: `Bearer ${token}` }
@@ -197,7 +197,7 @@ export default {
     async updateTrack(id, updatedData) {
       try {
         const token = localStorage.getItem('access_token');
-        const response = await axios.put(`http://localhost:5000/api/tracks/${id}`, updatedData, {
+        const response = await axios.put(`/api/tracks/${id}`, updatedData, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.status === 200) {
@@ -217,7 +217,7 @@ export default {
     async deleteTrack(id) {
       try {
         const token = localStorage.getItem('access_token');
-        const response = await axios.delete(`http://localhost:5000/api/tracks/${id}`, {
+        const response = await axios.delete(`/api/tracks/${id}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.status === 200) {
@@ -233,7 +233,7 @@ export default {
     async searchTracks(query) {
       try {
         const token = localStorage.getItem('access_token');
-        const response = await axios.get(`http://localhost:5000/api/tracks/search?query=${query}`, {
+        const response = await axios.get(`/api/tracks/search?query=${query}`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (response.status === 200) {
