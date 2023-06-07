@@ -51,7 +51,7 @@
         <div class="input-group">
           <input v-model="searchQuery" type="text" placeholder="Search tracks..." class="form-control">
           <div class="input-group-append">
-            <button type="submit" class="btn btn-outline-success">Search</button>
+            <button type="submit" class="btn btn-outline-success mr-2">Search</button>
             <button type="button" class="btn btn-outline-danger" @click="resetTracks">Reset</button>
           </div>
         </div>
@@ -63,7 +63,7 @@
           class="list-group-item d-flex justify-content-between align-items-center bg-dark">
           {{ track.name }}
           <div>
-            <button @click="editTrack(track)" class="btn btn-outline-success">Edit</button>
+            <button @click="editTrack(track)" class="btn btn-outline-success mr-2">Edit</button>
             <button @click="deleteTrack(track.id)" class="btn btn-outline-danger">Delete</button>
           </div>
         </li>
@@ -151,7 +151,8 @@ export default {
         this.userId = response.data.user_id;
         await this.getTracks();
       } catch (error) {
-        console.log(error);
+        this.popupMessage = 'Error: ' + error;
+        setTimeout(() => { this.popupMessage = null }, 3000);
       }
     },
 
