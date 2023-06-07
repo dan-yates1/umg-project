@@ -91,6 +91,14 @@
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
+
+    <div v-if="errorMessage" class="alert alert-danger alert-dismissible fade show" role="alert">
+      {{ errorMessage }}
+      <button type="button" class="close" @click="closeError" aria-label="Close">
+        <span aria-hidden="true">&times;</span>
+      </button>
+    </div>
+
   </div>
 </template>
 
@@ -116,7 +124,8 @@ export default {
       isClicked: false,
       searchQuery: '',
       originalTracks: [],
-      popupMessage: null
+      popupMessage: null,
+      errorMessage: null
     };
   },
 
@@ -151,8 +160,8 @@ export default {
         this.userId = response.data.user_id;
         await this.getTracks();
       } catch (error) {
-        this.popupMessage = 'Error: ' + error;
-        setTimeout(() => { this.popupMessage = null }, 3000);
+        this.errorMessage = 'Error: ' + error;
+        setTimeout(() => { this.errorMessage = null }, 3000);
       }
     },
 
@@ -274,4 +283,5 @@ ul {
 
 input {
   margin-right: 10px;
-}</style>
+}
+</style>
