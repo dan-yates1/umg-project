@@ -12,7 +12,7 @@ app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['SECRET_KEY'] = SECRET_KEY
 app.config['JWT_SECRET_KEY'] = JWT_SECRET_KEY
-app.config['JWT_TOKEN_LOCATION'] = ['headers'] 
+app.config['JWT_TOKEN_LOCATION'] = ['headers']
 jwt = JWTManager(app)
 
 # Initialize SQLAlchemy and LoginManager
@@ -21,6 +21,7 @@ login = LoginManager(app)
 
 # Configure CORS
 CORS(app, supports_credentials=True)
+
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -39,6 +40,7 @@ class User(UserMixin, db.Model):
             'username': self.username,
         }
 
+
 class Track(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(128), nullable=False)
@@ -50,6 +52,7 @@ class Track(db.Model):
             'name': self.name,
             'user_id': self.user_id,
         }
+
 
 @app.route('/register', methods=['POST'])
 def register():
@@ -64,12 +67,14 @@ def register():
     db.session.commit()
     return jsonify({'message': 'User registered successfully'}), 201
 
+
 @app.route('/login', methods=['POST'])
 def login():
     data = request.get_json()
     user = User.query.filter_by(username=data['username']).first()
     if user and check_password_hash(user.password_hash, data['password']):
-        access_token = create_access_token(identity={'username': user.username, 'user_id': user.id})
+        access_token = create_access_token(
+            identity={'username': user.username, 'user_id': user.id})
         return jsonify(access_token=access_token, user_id=user.id), 200
     else:
         return jsonify({"msg": "Invalid credentials"}), 401
@@ -81,6 +86,7 @@ def logout():
     logout_user()
     return jsonify({'message': 'Logged out successfully'}), 200
 
+
 @app.route('/api/tracks', methods=['GET'])
 @jwt_required()
 def get_tracks():
@@ -89,6 +95,7 @@ def get_tracks():
     tracks = Track.query.all()
     filtered_tracks = [track for track in tracks if track.user_id == user_id]
     return jsonify([track.to_dict() for track in filtered_tracks])
+
 
 @app.route('/api/tracks', methods=['POST'])
 @jwt_required()
@@ -101,10 +108,12 @@ def add_track():
     db.session.commit()
     return jsonify(new_track.to_dict()), 201
 
+
 @app.route('/api/tracks/<int:id>', methods=['DELETE'])
 @jwt_required()
 def delete_track(id):
-    track = Track.query.get(id)  # This will return None if no track with that ID exists
+    # This will return None if no track with that ID exists
+    track = Track.query.get(id)
     if track is None:
         return jsonify({'message': 'Invalid track ID.'}), 404
     try:
@@ -113,6 +122,7 @@ def delete_track(id):
         return jsonify({'message': 'Track deleted successfully'}), 200
     except:
         return jsonify({'message': 'Failed to delete track'}), 400
+
 
 @app.route('/api/tracks/<int:id>', methods=['PUT'])
 @jwt_required()
@@ -128,6 +138,7 @@ def update_track(id):
     except:
         return jsonify({'message': 'Failed to update track'}), 400
 
+
 @app.route('/api/tracks/search', methods=['GET'])
 @jwt_required()
 def search():
@@ -137,7 +148,7 @@ def search():
     else:
         tracks = Track.query.all()
     return jsonify([track.to_dict() for track in tracks]), 200
- 
+
 
 if __name__ == "__main__":
     with app.app_context():
