@@ -2,63 +2,68 @@
   <div id="app" class="container mt-5">
     <h1 class="text-center text-success mb-4">My Track Watchlist</h1>
     <div v-if="!loggedIn">
-      <div class="row">
-        <div class="col-md-6">
-          <h2 class="text-success mb-3">Register</h2>
-          <form @submit.prevent="register" class="mb-4">
-            <div class="form-group">
-              <input v-model="username" type="text" id="username" class="form-control" placeholder="Username" required>
-            </div>
-            <div class="form-group">
-              <input v-model="password" type="password" id="password" class="form-control" placeholder="Password"
-                required>
-            </div>
-            <button type="submit" class="btn btn-success btn-block">Register</button>
-          </form>
-        </div>
+      <!-- Registration Form -->
+      <div>
+        <h2 class="text-success mb-3">Register</h2>
+        <form @submit.prevent="register" class="mb-4">
+          <div class="form-group">
+            <input v-model="username" type="text" id="username" class="form-control" placeholder="Username" required>
+          </div>
+          <div class="form-group">
+            <input v-model="password" type="password" id="password" class="form-control" placeholder="Password" required>
+          </div>
+          <button type="submit" class="btn btn-success btn-block">Register</button>
+        </form>
+      </div>
 
-        <div class="col-md-6">
-          <h2 class="text-success mb-3">Login</h2>
-          <form @submit.prevent="login">
-            <div class="form-group">
-              <input v-model="loginUsername" type="text" id="loginUsername" class="form-control" placeholder="Username"
-                required>
-            </div>
-            <div class="form-group">
-              <input v-model="loginPassword" type="password" id="loginPassword" class="form-control"
-                placeholder="Password" required>
-            </div>
-            <button type="submit" class="btn btn-success btn-block">Login</button>
-          </form>
-        </div>
+      <!-- Login Form -->
+      <div>
+        <h2 class="text-success mb-3">Login</h2>
+        <form @submit.prevent="login">
+          <div class="form-group">
+            <input v-model="loginUsername" type="text" id="loginUsername" class="form-control" placeholder="Username"
+              required>
+          </div>
+          <div class="form-group">
+            <input v-model="loginPassword" type="password" id="loginPassword" class="form-control" placeholder="Password"
+              required>
+          </div>
+          <button type="submit" class="btn btn-success btn-block">Login</button>
+        </form>
       </div>
     </div>
 
     <div v-else>
-      <div class="d-flex justify-content-between align-items-center mb-3">
+      <!-- Welcome Message and Logout Button -->
+      <div class="mb-3">
         <h2 class="text-success">Welcome, {{ username }}!</h2>
         <button @click="logout" class="btn btn-outline-danger">Logout</button>
       </div>
+
+      <!-- Add Track Form -->
       <div class="form-group">
         <input v-model="newTrack" type="text" class="form-control mb-2" placeholder="Add new track">
         <button @click="addTrack" class="btn btn-success btn-block">Add Track</button>
       </div>
+
+      <!-- Search and Reset Form -->
       <form @submit.prevent="searchTracks(searchQuery)" class="mb-3">
         <div class="input-group">
           <input v-model="searchQuery" type="text" placeholder="Search tracks..." class="form-control">
-          <div>
-            <button type="submit" class="btn btn-outline-success mr-2">Search</button>
+          <div class="input-group-append">
+            <button type="submit" class="btn btn-outline-success">Search</button>
             <button type="button" class="btn btn-outline-danger" @click="resetTracks">Reset</button>
           </div>
         </div>
       </form>
 
+      <!-- Track List -->
       <ul class="list-group mb-4">
         <li v-for="track in tracks" :key="track.id"
           class="list-group-item d-flex justify-content-between align-items-center bg-dark">
           {{ track.name }}
           <div>
-            <button @click="editTrack(track)" class="btn btn-outline-success mr-2">Edit</button>
+            <button @click="editTrack(track)" class="btn btn-outline-success">Edit</button>
             <button @click="deleteTrack(track.id)" class="btn btn-outline-danger">Delete</button>
           </div>
         </li>
@@ -67,6 +72,7 @@
       </ul>
     </div>
 
+    <!-- Edit Track Form -->
     <div v-if="editingTrack">
       <h2 class="text-success mb-3">Edit Track</h2>
       <form @submit.prevent="updateTrack(editingTrack.id, editingTrack)">
@@ -78,13 +84,13 @@
       </form>
     </div>
 
+    <!-- Popup Message -->
     <div v-if="popupMessage" class="alert alert-success alert-dismissible fade show" role="alert">
       {{ popupMessage }}
       <button type="button" class="close" @click="popupMessage = null" aria-label="Close">
         <span aria-hidden="true">&times;</span>
       </button>
     </div>
-
   </div>
 </template>
 
@@ -267,5 +273,4 @@ ul {
 
 input {
   margin-right: 10px;
-}
-</style>
+}</style>
