@@ -4,7 +4,7 @@ from flask_login import LoginManager, UserMixin, login_user, login_required, cur
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_cors import CORS
 from functools import wraps
-from flask_jwt_extended import JWTManager, jwt_required, create_access_token
+from flask_jwt_extended import JWTManager, jwt_required, create_access_token, get_jwt_identity
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///app.db'
@@ -50,10 +50,6 @@ class Track(db.Model):
             'user_id': self.user_id,
         }
 
-@login.user_loader
-def load_user(id):
-    return User.query.get(int(id))
-
 @app.route('/register', methods=['POST'])
 def register():
     data = request.get_json()
@@ -72,10 +68,11 @@ def login():
     data = request.get_json()
     user = User.query.filter_by(username=data['username']).first()
     if user and check_password_hash(user.password_hash, data['password']):
-        access_token = create_access_token(identity={'username': user.username})
-        return jsonify(access_token=access_token), 200
+        access_token = create_access_token(identity={'username': user.username, 'user_id': user.id})
+        return jsonify(access_token=access_token, user_id=user.id), 200
     else:
         return jsonify({"msg": "Invalid credentials"}), 401
+
 
 @app.route('/logout', methods=['POST'])
 @login_required
@@ -83,22 +80,27 @@ def logout():
     logout_user()
     return jsonify({'message': 'Logged out successfully'}), 200
 
-@app.route('/api/track', methods=['GET'])
-@login_required
+@app.route('/api/tracks', methods=['GET'])
+@jwt_required()
 def get_tracks():
-    tracks = Track.query.filter_by(user_id=current_user.id).all()
-    return jsonify([track.to_dict() for track in tracks])
+    current_user = get_jwt_identity()
+    user_id = current_user['user_id']
+    tracks = Track.query.all()
+    filtered_tracks = [track for track in tracks if track.user_id == user_id]
+    return jsonify([track.to_dict() for track in filtered_tracks])
 
-@app.route('/api/track', methods=['POST'])
-@login_required
+@app.route('/api/tracks', methods=['POST'])
+@jwt_required()
 def add_track():
     data = request.get_json()
-    track = Track(name=data['name'], user_id=current_user.id)
-    db.session.add(track)
+    current_user = get_jwt_identity()
+    user_id = current_user['user_id']
+    new_track = Track(name=data['name'], user_id=user_id)
+    db.session.add(new_track)
     db.session.commit()
-    return jsonify(track.to_dict())
+    return jsonify(new_track.to_dict()), 201
 
-@app.route('/api/track/<int:id>', methods=['DELETE'])
+@app.route('/api/tracks/<int:id>', methods=['DELETE'])
 @jwt_required()
 def delete_track(id):
     track = Track.query.get(id)  # This will return None if no track with that ID exists
@@ -111,7 +113,7 @@ def delete_track(id):
     except:
         return jsonify({'message': 'Failed to delete track'}), 400
 
-@app.route('/api/track/<int:id>', methods=['PUT'])
+@app.route('/api/tracks/<int:id>', methods=['PUT'])
 @jwt_required()
 def update_track(id):
     track = Track.query.get(id)
@@ -125,15 +127,15 @@ def update_track(id):
     except:
         return jsonify({'message': 'Failed to update track'}), 400
 
-@app.route('/api/track/search', methods=['GET'])
+@app.route('/api/tracks/search', methods=['GET'])
 @jwt_required()
 def search():
     query = request.args.get('query')
     if query:
         tracks = Track.query.filter(Track.name.ilike(f'%{query}%')).all()
-        return jsonify([track.to_dict() for track in tracks]), 200
     else:
-        return jsonify({'message': 'Query parameter is missing'}), 400
+        tracks = Track.query.all()
+    return jsonify([track.to_dict() for track in tracks]), 200
  
 
 if __name__ == "__main__":
