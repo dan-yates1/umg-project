@@ -19,7 +19,7 @@ db = SQLAlchemy(app)
 login = LoginManager(app)
 
 # Configure CORS
-CORS(app, origins="http://localhost:8080", supports_credentials=True)
+CORS(app, supports_credentials=True)
 
 class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
